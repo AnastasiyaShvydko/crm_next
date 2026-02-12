@@ -11,9 +11,21 @@ export default function Home() {
   const [title, setTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+
+const [urgentIds, setUrgentIds] = useState<string[]>([]);
+const [importantIds, setImportantIds] = useState<string[]>([]);
+const [reasonsById, setReasonsById] = useState<Record<string, string>>({});
+const [aiLoading, setAiLoading] = useState(false);
   
 const [filter, setFilter] = useState<Filter>("all");
 const [query, setQuery] = useState<string>("");
+
+type Subtask = { title: string;};
+
+const [subtasksByTaskId, setSubtasksByTaskId] = useState<Record<string, Subtask[]>>({});
+const [openSubtasks, setOpenSubtasks] = useState<Record<string, boolean>>({});
+const [subtasksLoading, setSubtasksLoading] = useState<Record<string, boolean>>({});
 
   async function load(): Promise<void> {
     setLoading(true);
@@ -94,9 +106,74 @@ const [query, setQuery] = useState<string>("");
       return t.title.toLowerCase().includes(normalizedQuery);
     });
 
+
+    async function aiPrioritize(): Promise<void> {
+  setAiLoading(true);
+  setError(null);
+  try {
+    const res = await fetch("/api/ai/priorities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ limit: 30 }),
+    });
+    if (!res.ok) throw new Error(`AI priorities failed: ${res.status}`);
+    const data = await res.json();
+    setUrgentIds(Array.isArray(data.urgentIds) ? data.urgentIds : []);
+    setImportantIds(Array.isArray(data.importantIds) ? data.importantIds : []);
+    setReasonsById(data.reasonsById ?? {});
+  } catch (e) {
+    setError(e instanceof Error ? e.message : "AI priorities error");
+  } finally {
+    setAiLoading(false);
+  }
+}
+
+async function loadSubtasks(taskId: string): Promise<void> {
+  // toggle open
+  setOpenSubtasks((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
+console.log("subtasks response", taskId);
+  // если уже загружено — просто показываем/скрываем
+  if (subtasksByTaskId[taskId]) return;
+   
+  setSubtasksLoading((p) => ({ ...p, [taskId]: true }));
+  try {
+    const res = await fetch("/api/ai/subtasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId }),
+    });
+    if (!res.ok) throw new Error(`Subtasks failed: ${res.status}`);
+
+    const data = await res.json();
+    const subtasks = Array.isArray(data?.subtasks) ? data.subtasks : [];
+  console.log("subtasks response", taskId, data);
+    setSubtasksByTaskId((prev) => ({ ...prev, [taskId]: subtasks
+      
+     }) );
+  } catch (e) {
+    setError(e instanceof Error ? e.message : "Subtasks error");
+  } finally {
+    setSubtasksLoading((p) => ({ ...p, [taskId]: false }));
+  }
+}
+
+
+
   return (
     <main className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold">Taskboard</h1>
+      <div className="flex items-center justify-between">
+  <h1 className="text-2xl font-semibold">Taskboard</h1>
+
+  <button
+    type="button"
+    className="border rounded px-3 py-1"
+    onClick={() => void aiPrioritize()}
+    disabled={aiLoading}
+  >
+    {aiLoading ? "AI..." : "AI Prioritize"}
+  </button>
+</div>
+
 
    <TaskForm title={title} setTitle={setTitle} onAdd={addTask} />
   
@@ -122,7 +199,19 @@ const [query, setQuery] = useState<string>("");
       ) :  visibleTasks.length === 0 ? (
         <p className="mt-6 opacity-70">No matching tasks.</p>
       ) : (
-        <TaskList tasks={visibleTasks} onToggle={toggleTask} onDelete={deleteTask} />
+        <TaskList
+  tasks={visibleTasks}
+  onToggle={toggleTask}
+  onDelete={deleteTask}
+  urgentIds={urgentIds}
+  importantIds={importantIds}
+  reasonsById={reasonsById}
+  onSubtasks={loadSubtasks}
+  subtasksByTaskId={subtasksByTaskId}
+  openSubtasks={openSubtasks}
+  subtasksLoading={subtasksLoading}
+/>
+
 
       )}
     </main>
