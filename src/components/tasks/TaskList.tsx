@@ -38,7 +38,10 @@ return (
         const reason = reasonsById[t.id];
 
         return (
-          <li key={t.id} className="border rounded p-3 flex items-start gap-3">
+          <li
+  key={t.id}
+  className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
+>
             <input
               className="mt-1"
               type="checkbox"
@@ -53,16 +56,17 @@ return (
                 </span>
 
                 {isUrgent && (
-                  <span className="text-xs border rounded px-2 py-0.5 font-semibold">
-                    URGENT
-                  </span>
-                )}
+  <span className="text-xs font-medium bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+    URGENT
+  </span>
+)}
 
-                {isImportant && (
-                  <span className="text-xs border rounded px-2 py-0.5 font-semibold">
-                    IMPORTANT
-                  </span>
-                )}
+{isImportant && (
+  <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+    IMPORTANT
+  </span>
+)}
+
               </div>
 
               {reason && (
@@ -73,13 +77,17 @@ return (
             </div>
 
             {openSubtasks[t.id] && (
-  <ul className="mt-2 text-sm opacity-90 space-y-1">
-    {(subtasksByTaskId[t.id] ?? []).map((s, idx) => (
-      <li key={`${t.id}-${idx}`} className="border rounded px-2 py-1">
-        {idx + 1}. {s.title}
-      </li>
-    ))}
-  </ul>
+  <ul className="mt-3 space-y-1">
+  {(subtasksByTaskId[t.id] ?? []).map((s, i) => (
+    <li
+      key={i}
+      className="text-sm text-neutral-600 flex items-start gap-2"
+    >
+      <span className="text-neutral-400">{i + 1}.</span>
+      <span>{s.title}</span>
+    </li>
+  ))}
+</ul>
 )}
 
 

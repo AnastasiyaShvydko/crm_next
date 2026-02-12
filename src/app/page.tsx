@@ -160,18 +160,26 @@ console.log("subtasks response", taskId);
 
 
   return (
-    <main className="max-w-xl mx-auto p-6">
-      <div className="flex items-center justify-between">
-  <h1 className="text-2xl font-semibold">Taskboard</h1>
+    <main className="min-h-screen bg-neutral-50">
+  <div className="max-w-2xl mx-auto px-6 py-12">
+  <div className="flex items-center justify-between mb-8">
+  <div>
+    <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
+      Taskboard
+    </h1>
+    <p className="text-sm text-neutral-500 mt-1">
+      AI-powered task management
+    </p>
+  </div>
 
   <button
-    type="button"
-    className="border rounded px-3 py-1"
     onClick={() => void aiPrioritize()}
     disabled={aiLoading}
+    className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
   >
-    {aiLoading ? "AI..." : "AI Prioritize"}
+    {aiLoading ? "Analyzing..." : "AI Prioritize"}
   </button>
+</div>
 </div>
 
 
@@ -194,11 +202,16 @@ console.log("subtasks response", taskId);
         </div>
       )}
 
-      {loading ? (
-        <p className="mt-6 opacity-70">Loading...</p>
-      ) :  visibleTasks.length === 0 ? (
-        <p className="mt-6 opacity-70">No matching tasks.</p>
-      ) : (
+    {loading ? (
+  <p className="mt-6 text-neutral-500">Loading...</p>
+) : visibleTasks.length === 0 ? (
+  <div className="mt-12 text-center text-neutral-500">
+    <p className="text-sm">No tasks yet.</p>
+    <p className="text-xs mt-1">
+      Add your first task above to get started.
+    </p>
+  </div>
+) : (
         <TaskList
   tasks={visibleTasks}
   onToggle={toggleTask}
