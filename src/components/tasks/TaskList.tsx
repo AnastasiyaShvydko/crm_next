@@ -100,9 +100,7 @@ return (
 >
   {subtasksLoading[t.id] ? "Loading..." : "Subtasks"}
 </button>
-<div className="text-xs opacity-60">
-  open: {String(openSubtasks[t.id])} | count: {(subtasksByTaskId[t.id] ?? []).length}
-</div>
+
           </li>
         );
       })}
